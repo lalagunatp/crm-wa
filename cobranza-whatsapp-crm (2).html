@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cobranza WA — CRM de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c1117;--surface:#151c25;--surface2:#1c2530;--surface3:#24303d;--surface4:#2e3d4d;
+  --accent:#3b82f6;--accent2:#2563eb;--green:#22c55e;--green-bg:rgba(34,197,94,.12);
+  --yellow:#eab308;--yellow-bg:rgba(234,179,8,.12);
+  --orange:#f97316;--orange-bg:rgba(249,115,22,.12);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.12);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:#1e293b;
+  --radius:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* LOGIN */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:420px;max-width:100%}
+.login-box h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.5px}
+.login-box .sub{color:var(--text2);font-size:13px;margin-bottom:28px}
+.login-box .brand{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.login-box .brand-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+
+/* LAYOUT */
+.app{display:none;height:100vh}
+.app.show{display:flex}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100vh;position:sticky;top:0}
+.sidebar-brand{padding:18px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-brand .icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.sidebar-brand span{font-weight:700;font-size:14px;letter-spacing:-.3px}
+.sidebar-user{padding:14px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2)}
+.sidebar-user strong{color:var(--text);display:block;font-size:13px;margin-bottom:2px}
+.sidebar-nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .12s;border-left:2px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.nav-item .cnt{margin-left:auto;background:var(--surface3);font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;color:var(--text2)}
+.sidebar-bottom{padding:12px 16px;border-top:1px solid var(--border)}
+.sidebar-bottom button{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-family:inherit;font-size:12px}
+.sidebar-bottom button:hover{background:var(--surface3)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar h1{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.content{flex:1;padding:20px 24px;overflow-y:auto}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:6px;border:1px solid transparent;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;transition:all .12s;display:inline-flex;align-items:center;gap:5px}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:var(--accent2)}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--border)}.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-success{background:var(--green);color:#000}.btn-success:hover{opacity:.85}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{width:32px;height:32px;padding:0;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:14px}
+.btn-icon:hover{background:var(--surface3);color:var(--text)}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.stat .label{font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:500}
+.stat .val{font-size:26px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-1px}
+.stat .sub{font-size:11px;margin-top:4px;font-weight:500}
+
+/* TABLE */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-head h2{font-size:13px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:8px 18px;font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 18px;font-size:13px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px}
+.tag-green{background:var(--green-bg);color:var(--green)}
+.tag-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.tag-orange{background:var(--orange-bg);color:var(--orange)}
+.tag-red{background:var(--red-bg);color:var(--red)}
+.tag-blue{background:rgba(59,130,246,.12);color:var(--accent)}
+.tag-gray{background:var(--surface3);color:var(--text2)}
+
+/* FORM */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+input[type="text"],input[type="number"],input[type="password"],input[type="url"],textarea,select{
+  width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border .12s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:70px}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-bg.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:540px;max-width:94vw;max-height:90vh;overflow-y:auto}
+.modal-hd{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-size:15px;font-weight:700}
+.modal-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px}
+.modal-bd{padding:22px}
+.modal-ft{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* SEND */
+.progress-wrap{margin-top:14px}
+.progress-bar{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin:6px 0}
+.progress-fill{height:100%;background:var(--accent);border-radius:3px;transition:width .3s}
+.send-log{max-height:220px;overflow-y:auto;background:var(--bg);border-radius:6px;padding:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-top:10px;line-height:1.7}
+.send-log .ok{color:var(--green)}.send-log .err{color:var(--red)}.send-log .wait{color:var(--yellow)}
+
+/* FILTERS */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filters select,.filters input{width:auto;min-width:140px}
+.filter-tag{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text2);transition:all .12s}
+.filter-tag:hover,.filter-tag.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* AGING INDICATOR */
+.aging-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:1px}
+.aging-bar div{height:100%}
+
+/* PREVIEW BUBBLE */
+.wa-preview{background:#005c4b;padding:12px 14px;border-radius:0 8px 8px 8px;font-size:13px;line-height:1.6;color:#e9edef;max-width:360px;position:relative}
+.wa-preview .time{text-align:right;font-size:10px;color:rgba(255,255,255,.45);margin-top:6px}
+.wa-wrap{background:#0b141a;padding:24px;border-radius:12px;display:inline-block}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{width:56px}.sidebar-brand span,.sidebar-user,.nav-item span,.nav-item .cnt,.sidebar-bottom{display:none}
+  .sidebar-brand{justify-content:center;padding:14px 8px}.nav-item{justify-content:center;padding:10px 8px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){.stats{grid-template-columns:1fr}.content{padding:14px}.topbar{padding:10px 14px}}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="brand">
+      <div class="brand-icon">📞</div>
+      <div>
+        <h1>Cobranza WA</h1>
+        <div class="sub">CRM de gestión de cobranza vía WhatsApp</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>URL de tu Web App (Google Apps Script)</label>
+      <input type="url" id="webAppUrl" placeholder="https://script.google.com/macros/s/.../exec">
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">Pega la URL que obtienes al publicar el Apps Script como Web App. <a href="#" onclick="openSetupGuide();return false" style="color:var(--accent)">Ver instrucciones de configuración</a></div>
+    </div>
+    <div class="form-group">
+      <label>Nombre de la hoja (pestaña)</label>
+      <input type="text" id="webAppTab" value="PRUEBA" placeholder="Ej: PRUEBA, CxC, Cobranza">
+    </div>
+    <div class="form-group">
+      <label>Tu nombre (cobrador)</label>
+      <select id="loginCobrador">
+        <option value="__all__">Administrador — Ver todo</option>
+        <option value="__custom__">Escribir mi nombre...</option>
+      </select>
+    </div>
+    <div class="form-group" id="customNameGroup" style="display:none">
+      <label>Escribe tu nombre exacto como aparece en la hoja</label>
+      <input type="text" id="customName" placeholder="Ej: Carlos Mendoza">
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="btn btn-primary" style="flex:1" onclick="connectSheet()">Conectar y entrar</button>
+      <button class="btn btn-ghost" onclick="useDemoData()">Demo</button>
+    </div>
+    <div id="loginError" style="color:var(--red);font-size:12px;margin-top:10px;display:none"></div>
+  </div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="icon">📞</div><span>Cobranza WA</span></div>
+    <div class="sidebar-user" id="sidebarUser"><strong>Admin</strong>Todos los cobradores</div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="nav('dash')"><span>📊 Dashboard</span></div>
+      <div class="nav-item" onclick="nav('cuentas')"><span>📋 Cuentas</span><div class="cnt" id="navCuentas">0</div></div>
+      <div class="nav-item" onclick="nav('enviar')"><span>📤 Enviar</span></div>
+      <div class="nav-item" onclick="nav('plantillas')"><span>💬 Plantillas</span></div>
+      <div class="nav-item" onclick="nav('historial')"><span>🕐 Historial</span></div>
+      <div class="nav-item" onclick="nav('config')"><span>⚙ Configuración</span></div>
+    </nav>
+    <div class="sidebar-bottom"><button onclick="logout()">Cerrar sesión</button></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <span style="font-size:11px;color:var(--text3)" id="lastSync">—</span>
+        <button class="btn-icon" onclick="refreshData()" title="Recargar datos">🔄</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><div class="modal-hd"><h3 id="modalTitle"></h3><button class="modal-x" onclick="closeModal()">✕</button></div><div class="modal-bd" id="modalBody"></div><div class="modal-ft" id="modalFoot"></div></div>
+</div>
+
+<script>
+// ============ CONFIG & STATE ============
+const LS = key => 'cobranza_wa_' + key;
+
+let STATE = {
+  cobrador: '__all__',
+  cobradorName: 'Administrador',
+  sheetUrl: '',
+  sheetTab: 'CxC',
+  cuentas: [],
+  historial: JSON.parse(localStorage.getItem(LS('historial')) || '[]'),
+  plantillas: JSON.parse(localStorage.getItem(LS('plantillas')) || 'null') || [
+    {id:1, name:'Recordatorio suave', aging:'1-30', body:'Hola {nombre}, te recordamos que tienes un saldo pendiente de ${monto} en tu cuenta {cuenta} de Totalplay. ¿Podrías ponerte al corriente? Estamos para ayudarte. Gracias 🙏'},
+    {id:2, name:'Segundo aviso', aging:'31-60', body:'Hola {nombre}, tu cuenta {cuenta} tiene un adeudo de ${monto} con {dias} días de atraso. Es importante regularizar tu pago para evitar la suspensión de tu servicio. ¿Necesitas opciones de pago? Llámanos.'},
+    {id:3, name:'Aviso urgente', aging:'61-90', body:'Estimado/a {nombre}, tu servicio Totalplay cuenta {cuenta} está en riesgo de suspensión por un adeudo de ${monto} ({dias} días). Te pedimos liquidar a la brevedad. Podemos ayudarte con un plan de pago.'},
+    {id:4, name:'Última notificación', aging:'90+', body:'AVISO IMPORTANTE: {nombre}, tu cuenta {cuenta} con adeudo de ${monto} ({dias} días) será turnada a gestión externa si no se regulariza. Comunícate HOY para evitar cargos adicionales. Atención inmediata al [teléfono].'},
+  ],
+  config: JSON.parse(localStorage.getItem(LS('config')) || 'null') || {
+    delayMin: 30, delayMax: 60,
+    colCuenta: 'A', colNombre: 'B', colTelefono: 'C', colMonto: 'D', colDias: 'E', colCobrador: 'F'
+  }
+};
+
+let sendActive = false, sendTimer = null;
+
+// ============ LOGIN ============
+document.getElementById('loginCobrador').addEventListener('change', e => {
+  document.getElementById('customNameGroup').style.display = e.target.value === '__custom__' ? '' : 'none';
+});
+
+function showLoginError(msg) {
+  const el = document.getElementById('loginError');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function useDemoData() {
+  STATE.cuentas = generateDemoData();
+  STATE.cobrador = '__all__';
+  STATE.cobradorName = 'Administrador (Demo)';
+  enterApp();
+}
+
+function generateDemoData() {
+  const nombres = ['María García','Juan López','Roberto Hernández','Ana Martínez','Carlos Rodríguez','Laura Sánchez','Pedro Ramírez','Sofía Torres','Miguel Flores','Diana Morales','José Ruiz','Patricia Vargas','Fernando Castillo','Claudia Mendoza','Ricardo Navarro','Teresa Guerrero','Alejandro Reyes','Gabriela Ortiz','Daniel Jiménez','Verónica Domínguez','Luis Aguilar','Carmen Rojas','Andrés Peña','Isabella Cruz','Jorge Delgado'];
+  const cobradores = ['Carlos Mendoza','Ana García','Roberto Díaz','María López'];
+  const data = [];
+  for (let i = 0; i < 180; i++) {
+    const dias = Math.floor(Math.random() * 150) + 1;
+    data.push({
+      cuenta: 'TP-' + String(100000 + i).slice(1),
+      nombre: nombres[i % nombres.length],
+      telefono: '871' + String(1000000 + Math.floor(Math.random()*9000000)),
+      monto: (Math.floor(Math.random() * 8) + 1) * 500 + Math.floor(Math.random()*5)*100,
+      dias: dias,
+      cobrador: cobradores[i % cobradores.length],
+      gestionado: false,
+      ultimaGestion: null
+    });
+  }
+  return data;
+}
+
+function openSetupGuide() {
+  openModal('Configuración del Apps Script', `
+    <div style="font-size:13px;line-height:1.7;color:var(--text2)">
+      <p style="margin-bottom:14px;color:var(--text)"><strong>Sigue estos pasos para conectar tu Google Sheet:</strong></p>
+
+      <p><strong style="color:var(--accent)">1.</strong> Abre tu Google Sheet de cuentas por cobrar</p>
+      <p><strong style="color:var(--accent)">2.</strong> Ve a <strong>Extensiones → Apps Script</strong></p>
+      <p><strong style="color:var(--accent)">3.</strong> Borra todo el código y pega el siguiente:</p>
+
+      <div style="background:var(--bg);border-radius:6px;padding:14px;margin:10px 0;font-family:'DM Mono',monospace;font-size:11px;max-height:280px;overflow-y:auto;white-space:pre;color:var(--green);line-height:1.6">function doGet(e) {
+  var hoja = e.parameter.hoja || "PRUEBA";
+  var mode = e.parameter.mode || "json";
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(hoja);
+  var resultado;
+
+  if (!sheet) {
+    resultado = JSON.stringify(
+      {_source:"cobranza_wa", error:"Hoja no encontrada: "+hoja}
+    );
+  } else {
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    var result = [];
+    for (var i = 1; i &lt; data.length; i++) {
+      var row = {};
+      for (var j = 0; j &lt; headers.length; j++) {
+        row[headers[j]] = data[i][j];
+      }
+      result.push(row);
+    }
+    resultado = JSON.stringify(
+      {_source:"cobranza_wa", ok:true, data:result, hoja:hoja}
+    );
+  }
+
+  if (mode === "iframe") {
+    var html = "&lt;script&gt;parent.postMessage("
+      + "'" + resultado.replace(/'/g,"\\'") + "'"
+      + ", '*');&lt;/script&gt;";
+    return HtmlService.createHtmlOutput(html)
+      .setXFrameOptionsMode(
+        HtmlService.XFrameOptionsMode.ALLOWALL
+      );
+  }
+
+  return ContentService.createTextOutput(resultado)
+    .setMimeType(ContentService.MimeType.JSON);
+}</div>
+
+      <p><strong style="color:var(--accent)">4.</strong> Clic en <strong>Implementar → Nueva implementación</strong></p>
+      <p><strong style="color:var(--accent)">5.</strong> Tipo: <strong>Aplicación web</strong></p>
+      <p><strong style="color:var(--accent)">6.</strong> Ejecutar como: <strong>Yo</strong> / Acceso: <strong>Cualquier persona</strong></p>
+      <p><strong style="color:var(--accent)">7.</strong> Clic en <strong>Implementar</strong> y copia la URL</p>
+      <p><strong style="color:var(--accent)">8.</strong> Pega esa URL en el campo del login</p>
+
+      <div style="background:var(--surface3);border-radius:6px;padding:12px;margin-top:14px">
+        <strong style="color:var(--yellow)">⚠ Tu hoja debe tener estos encabezados en la fila 1:</strong><br>
+        <code style="color:var(--accent)">cuenta</code> &nbsp;
+        <code style="color:var(--accent)">nombre</code> &nbsp;
+        <code style="color:var(--accent)">telefono</code> &nbsp;
+        <code style="color:var(--accent)">monto</code> &nbsp;
+        <code style="color:var(--accent)">dias</code> &nbsp;
+        <code style="color:var(--accent)">cobrador</code>
+      </div>
+    </div>
+  `, '');
+}
+
+function connectSheet() {
+  const url = document.getElementById('webAppUrl').value.trim();
+  const sel = document.getElementById('loginCobrador').value;
+  const custom = document.getElementById('customName').value.trim();
+
+  if (!url) return showLoginError('Pega la URL de tu Web App (Apps Script)');
+  if (!url.includes('script.google.com')) return showLoginError('La URL debe ser de script.google.com. Consulta las instrucciones.');
+
+  STATE.sheetUrl = url;
+  STATE.cobrador = sel === '__custom__' ? custom : sel;
+  STATE.cobradorName = sel === '__all__' ? 'Administrador' : (sel === '__custom__' ? custom : sel);
+
+  showLoginError('Conectando...');
+  document.getElementById('loginError').style.color = 'var(--accent)';
+
+  const hoja = document.getElementById('webAppTab')?.value || 'PRUEBA';
+  loadFromAppsScript(url, hoja, function(json) {
+    if (!json || json.error) {
+      document.getElementById('loginError').style.color = 'var(--red)';
+      showLoginError(json ? json.error : 'Tiempo agotado. Verifica que la Web App esté publicada correctamente.');
+      return;
+    }
+    if (!json.data || !json.data.length) {
+      document.getElementById('loginError').style.color = 'var(--red)';
+      showLoginError('La hoja está vacía o no tiene datos.');
+      return;
+    }
+    STATE.cuentas = parseSheetData(json.data);
+    if (!STATE.cuentas.length) {
+      document.getElementById('loginError').style.color = 'var(--red)';
+      showLoginError('No se encontraron cuentas válidas. Revisa los encabezados.');
+      return;
+    }
+    STATE.sheetTab = hoja;
+    localStorage.setItem(LS('webAppUrl'), url);
+    enterApp();
+  });
+}
+
+// Load data via hidden iframe + postMessage (bypasses CORS completely)
+function loadFromAppsScript(baseUrl, hoja, callback) {
+  const separator = baseUrl.includes('?') ? '&' : '?';
+  const src = baseUrl + separator + 'hoja=' + encodeURIComponent(hoja) + '&mode=iframe';
+
+  let done = false;
+
+  function onMessage(e) {
+    if (done) return;
+    try {
+      const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+      if (data && data._source === 'cobranza_wa') {
+        done = true;
+        window.removeEventListener('message', onMessage);
+        document.getElementById('dataIframe')?.remove();
+        clearTimeout(timeout);
+        callback(data);
+      }
+    } catch(ex) {}
+  }
+
+  window.addEventListener('message', onMessage);
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'dataIframe';
+  iframe.style.cssText = 'display:none;width:0;height:0;border:0';
+  iframe.src = src;
+  document.body.appendChild(iframe);
+
+  const timeout = setTimeout(function() {
+    if (!done) {
+      done = true;
+      window.removeEventListener('message', onMessage);
+      document.getElementById('dataIframe')?.remove();
+      callback(null);
+    }
+  }, 20000);
+}
+
+function parseSheetData(data) {
+  return data.map(row => ({
+    cuenta: String(row.cuenta || row.CUENTA || row.Cuenta || ''),
+    nombre: String(row.nombre || row.NOMBRE || row.Nombre || ''),
+    telefono: String(row.telefono || row.TELEFONO || row.Telefono || row['teléfono'] || row['TELÉFONO'] || '').replace(/\D/g, ''),
+    monto: parseFloat(String(row.monto || row.MONTO || row.Monto || '0').replace(/[,$]/g, '')) || 0,
+    dias: parseInt(row.dias || row.DIAS || row.Dias || row['días'] || row['DÍAS'] || '0') || 0,
+    cobrador: String(row.cobrador || row.COBRADOR || row.Cobrador || ''),
+    gestionado: false,
+    ultimaGestion: null
+  })).filter(c => c.cuenta && c.telefono);
+}
+
+function enterApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  document.getElementById('sidebarUser').innerHTML = `<strong>${STATE.cobradorName}</strong>${STATE.cobrador === '__all__' ? 'Todos los cobradores' : 'Cobrador'}`;
+  document.getElementById('lastSync').textContent = 'Sync: ' + new Date().toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+  nav('dash');
+}
+
+function logout() {
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+function refreshData() {
+  if (!STATE.sheetUrl || !STATE.sheetUrl.includes('script.google.com')) {
+    document.getElementById('lastSync').textContent = 'Sync: ' + new Date().toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+    nav(currentView);
+    return;
+  }
+  document.getElementById('lastSync').textContent = '⏳ Sincronizando...';
+  loadFromAppsScript(STATE.sheetUrl, STATE.sheetTab || 'PRUEBA', function(json) {
+    if (json && json.data && json.data.length) {
+      STATE.cuentas = parseSheetData(json.data);
+    }
+    document.getElementById('lastSync').textContent = 'Sync: ' + new Date().toLocaleTimeString('es-MX', {hour:'2-digit',minute:'2-digit'});
+    nav(currentView);
+  });
+}
+
+// ============ NAVIGATION ============
+let currentView = 'dash';
+function nav(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    const views = ['dash','cuentas','enviar','plantillas','historial','config'];
+    el.classList.toggle('active', views[i] === view);
+  });
+  const titles = {dash:'Dashboard',cuentas:'Cuentas por Cobrar',enviar:'Enviar Mensajes',plantillas:'Plantillas de Mensajes',historial:'Historial de Gestiones',config:'Configuración'};
+  document.getElementById('viewTitle').textContent = titles[view] || '';
+  document.getElementById('navCuentas').textContent = getFiltered().length;
+  const fn = {dash:renderDash,cuentas:renderCuentas,enviar:renderEnviar,plantillas:renderPlantillas,historial:renderHistorial,config:renderConfig};
+  if (fn[view]) fn[view]();
+}
+
+function getFiltered() {
+  if (STATE.cobrador === '__all__') return STATE.cuentas;
+  return STATE.cuentas.filter(c => c.cobrador.toLowerCase() === STATE.cobrador.toLowerCase());
+}
+
+function agingTag(dias) {
+  if (dias <= 30) return ['1-30d', 'tag-green'];
+  if (dias <= 60) return ['31-60d', 'tag-yellow'];
+  if (dias <= 90) return ['61-90d', 'tag-orange'];
+  return ['90+d', 'tag-red'];
+}
+
+function agingColor(dias) {
+  if (dias <= 30) return 'var(--green)';
+  if (dias <= 60) return 'var(--yellow)';
+  if (dias <= 90) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function fmtMoney(n) { return '$' + Number(n).toLocaleString('es-MX', {minimumFractionDigits:0}); }
+function fmtPhone(p) { return p.length === 10 ? p.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3') : p; }
+
+// ============ DASHBOARD ============
+function renderDash() {
+  const data = getFiltered();
+  const total = data.length;
+  const montoTotal = data.reduce((s,c) => s + c.monto, 0);
+  const a1 = data.filter(c => c.dias <= 30);
+  const a2 = data.filter(c => c.dias > 30 && c.dias <= 60);
+  const a3 = data.filter(c => c.dias > 60 && c.dias <= 90);
+  const a4 = data.filter(c => c.dias > 90);
+  const gestionados = STATE.historial.filter(h => {
+    const d = new Date(h.fecha); const hoy = new Date();
+    return d.toDateString() === hoy.toDateString();
+  }).length;
+
+  const cobradores = {};
+  data.forEach(c => { cobradores[c.cobrador] = (cobradores[c.cobrador]||0) + 1; });
+
+  document.getElementById('content').innerHTML = `
+    <div class="stats">
+      <div class="stat"><div class="label">Cuentas</div><div class="val">${total}</div><div class="sub" style="color:var(--text3)">por cobrar hoy</div></div>
+      <div class="stat"><div class="label">Monto total</div><div class="val" style="font-size:22px">${fmtMoney(montoTotal)}</div><div class="sub" style="color:var(--text3)">adeudo acumulado</div></div>
+      <div class="stat"><div class="label">Gestiones hoy</div><div class="val" style="color:var(--green)">${gestionados}</div><div class="sub" style="color:var(--text3)">mensajes enviados</div></div>
+      <div class="stat"><div class="label">Promedio adeudo</div><div class="val" style="font-size:22px">${total ? fmtMoney(montoTotal/total) : '$0'}</div><div class="sub" style="color:var(--text3)">por cuenta</div></div>
+      <div class="stat"><div class="label">Prom. días atraso</div><div class="val">${total ? Math.round(data.reduce((s,c)=>s+c.dias,0)/total) : 0}</div><div class="sub" style="color:var(--text3)">días promedio</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="panel">
+        <div class="panel-head"><h2>Antigüedad de cartera</h2></div>
+        <div style="padding:18px">
+          <div class="aging-bar" style="height:14px;border-radius:6px;margin-bottom:16px">
+            <div style="width:${total?a1.length/total*100:25}%;background:var(--green);border-radius:4px 0 0 4px" title="1-30 días"></div>
+            <div style="width:${total?a2.length/total*100:25}%;background:var(--yellow)" title="31-60 días"></div>
+            <div style="width:${total?a3.length/total*100:25}%;background:var(--orange)" title="61-90 días"></div>
+            <div style="width:${total?a4.length/total*100:25}%;background:var(--red);border-radius:0 4px 4px 0" title="90+ días"></div>
+          </div>
+          ${[['1-30 días',a1,'--green'],['31-60 días',a2,'--yellow'],['61-90 días',a3,'--orange'],['90+ días',a4,'--red']].map(([l,arr,c]) => `
+            <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px">
+              <span style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:var(${c})"></span>${l}</span>
+              <span style="font-family:'DM Mono';font-weight:600">${arr.length} <span style="color:var(--text3);font-weight:400">— ${fmtMoney(arr.reduce((s,x)=>s+x.monto,0))}</span></span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Cuentas por cobrador</h2></div>
+        <div style="padding:18px">
+          ${Object.entries(cobradores).sort((a,b)=>b[1]-a[1]).map(([name, count]) => {
+            const pct = total ? (count/total*100).toFixed(0) : 0;
+            return `<div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span>${name}</span><span style="font-family:'DM Mono'">${count}</span></div>
+              <div style="height:6px;background:var(--bg);border-radius:3px"><div style="height:100%;width:${pct}%;background:var(--accent);border-radius:3px"></div></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><h2>Cuentas críticas (90+ días)</h2><span class="tag tag-red">${a4.length}</span></div>
+      ${a4.length ? `<table>
+        <tr><th>Cuenta</th><th>Cliente</th><th>Monto</th><th>Días</th><th>Cobrador</th><th></th></tr>
+        ${a4.slice(0,10).map(c => `<tr>
+          <td style="font-family:'DM Mono';font-size:12px">${c.cuenta}</td>
+          <td>${c.nombre}</td>
+          <td style="font-weight:700">${fmtMoney(c.monto)}</td>
+          <td><span class="tag tag-red">${c.dias}d</span></td>
+          <td style="font-size:12px;color:var(--text2)">${c.cobrador}</td>
+          <td><button class="btn btn-sm btn-ghost" onclick="sendSingle('${c.cuenta}')">📤 Enviar</button></td>
+        </tr>`).join('')}
+      </table>` : '<div style="padding:30px;text-align:center;color:var(--text3)">Sin cuentas críticas 🎉</div>'}
+    </div>
+  `;
+}
+
+// ============ CUENTAS ============
+function renderCuentas() {
+  const data = getFiltered();
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <input type="text" id="fSearch" placeholder="Buscar cuenta o nombre..." style="min-width:220px" oninput="filterTable()">
+      <select id="fAging" onchange="filterTable()"><option value="">Todas las antigüedades</option><option value="1-30">1-30 días</option><option value="31-60">31-60 días</option><option value="61-90">61-90 días</option><option value="90+">90+ días</option></select>
+      ${STATE.cobrador === '__all__' ? `<select id="fCobrador" onchange="filterTable()"><option value="">Todos los cobradores</option>${[...new Set(STATE.cuentas.map(c=>c.cobrador))].filter(Boolean).map(c=>`<option>${c}</option>`).join('')}</select>` : ''}
+      <span style="margin-left:auto;font-size:12px;color:var(--text3)"><span id="filteredCount">${data.length}</span> cuentas</span>
+    </div>
+    <div class="panel">
+      <table>
+        <tr><th>Cuenta</th><th>Cliente</th><th>Teléfono</th><th>Monto</th><th>Días</th>${STATE.cobrador==='__all__'?'<th>Cobrador</th>':''}<th></th></tr>
+        ${data.sort((a,b)=>b.dias-a.dias).map(c => {
+          const [label, cls] = agingTag(c.dias);
+          return `<tr class="acct-row" data-search="${(c.cuenta+' '+c.nombre).toLowerCase()}" data-aging="${c.dias}" data-cobrador="${c.cobrador}">
+            <td style="font-family:'DM Mono';font-size:12px">${c.cuenta}</td>
+            <td>${c.nombre}</td>
+            <td style="font-size:12px">${fmtPhone(c.telefono)}</td>
+            <td style="font-weight:700">${fmtMoney(c.monto)}</td>
+            <td><span class="tag ${cls}">${label}</span></td>
+            ${STATE.cobrador==='__all__'?`<td style="font-size:12px;color:var(--text2)">${c.cobrador}</td>`:''}
+            <td><button class="btn btn-sm btn-ghost" onclick="sendSingle('${c.cuenta}')">📤</button></td>
+          </tr>`;
+        }).join('')}
+      </table>
+    </div>
+  `;
+}
+
+function filterTable() {
+  const q = (document.getElementById('fSearch')?.value || '').toLowerCase();
+  const aging = document.getElementById('fAging')?.value || '';
+  const cob = document.getElementById('fCobrador')?.value || '';
+  let count = 0;
+  document.querySelectorAll('.acct-row').forEach(tr => {
+    const matchSearch = !q || tr.dataset.search.includes(q);
+    const d = parseInt(tr.dataset.aging);
+    let matchAging = true;
+    if (aging === '1-30') matchAging = d <= 30;
+    else if (aging === '31-60') matchAging = d > 30 && d <= 60;
+    else if (aging === '61-90') matchAging = d > 60 && d <= 90;
+    else if (aging === '90+') matchAging = d > 90;
+    const matchCob = !cob || tr.dataset.cobrador === cob;
+    const show = matchSearch && matchAging && matchCob;
+    tr.style.display = show ? '' : 'none';
+    if (show) count++;
+  });
+  const el = document.getElementById('filteredCount');
+  if (el) el.textContent = count;
+}
+
+// ============ SEND ============
+function renderEnviar() {
+  const data = getFiltered();
+  document.getElementById('content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:20px">
+      <div>
+        <div class="panel">
+          <div class="panel-head"><h2>Configurar envío</h2></div>
+          <div style="padding:18px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label>Antigüedad de deuda</label>
+                <select id="sendAging" onchange="updateSendPreview()">
+                  <option value="">Todas</option><option value="1-30">1-30 días</option><option value="31-60">31-60 días</option><option value="61-90">61-90 días</option><option value="90+">90+ días</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Plantilla (auto según antigüedad)</label>
+                <select id="sendPlantilla" onchange="updateSendPreview()">
+                  <option value="auto">Automática por antigüedad</option>
+                  ${STATE.plantillas.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-group">
+                <label>Delay mínimo (seg)</label>
+                <input type="number" id="sendDelayMin" value="${STATE.config.delayMin}" min="10" max="120">
+              </div>
+              <div class="form-group">
+                <label>Delay máximo (seg)</label>
+                <input type="number" id="sendDelayMax" value="${STATE.config.delayMax}" min="15" max="180">
+              </div>
+            </div>
+            <div style="background:var(--bg);border-radius:6px;padding:12px;font-size:12px;color:var(--text2);margin-bottom:14px">
+              ⚠ Cada enlace abre WhatsApp con el mensaje pre-cargado. Tú confirmas el envío manualmente.<br>
+              Delay aleatorio de <strong id="delayRange">${STATE.config.delayMin}-${STATE.config.delayMax}s</strong> entre cada mensaje para evitar detección.
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="btn btn-primary" onclick="startMassSend()" id="btnStartSend">📤 Iniciar envío — <span id="sendRecipients">${data.length}</span> cuentas</button>
+              <button class="btn btn-danger" onclick="stopMassSend()" id="btnStopSend" style="display:none">⏹ Detener</button>
+            </div>
+            <div id="sendProgress" style="display:none">
+              <div class="progress-wrap">
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-top:12px">
+                  <span>Progreso: <strong id="sendCnt">0</strong> / <span id="sendTot">0</span></span>
+                  <span>✓ <span id="sendOk">0</span></span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0"></div></div>
+              </div>
+              <div class="send-log" id="sendLog"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-head"><h2>Vista previa</h2></div>
+          <div style="padding:18px">
+            <div class="wa-wrap">
+              <div class="wa-preview" id="waPreview">Selecciona antigüedad para ver el mensaje...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><h2>Destinatarios</h2></div>
+          <div style="padding:12px;max-height:240px;overflow-y:auto" id="recipientsList">
+            ${data.slice(0,20).map(c => `<div style="display:flex;justify-content:space-between;padding:5px 6px;font-size:12px;border-bottom:1px solid var(--border)">
+              <span>${c.nombre}</span>
+              <span class="tag ${agingTag(c.dias)[1]}" style="font-size:9px">${c.dias}d — ${fmtMoney(c.monto)}</span>
+            </div>`).join('')}
+            ${data.length > 20 ? `<div style="padding:8px;text-align:center;font-size:11px;color:var(--text3)">...y ${data.length - 20} más</div>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  updateSendPreview();
+}
+
+function getPlantillaForAging(dias) {
+  if (dias <= 30) return STATE.plantillas.find(p => p.aging === '1-30');
+  if (dias <= 60) return STATE.plantillas.find(p => p.aging === '31-60');
+  if (dias <= 90) return STATE.plantillas.find(p => p.aging === '61-90');
+  return STATE.plantillas.find(p => p.aging === '90+');
+}
+
+function updateSendPreview() {
+  const aging = document.getElementById('sendAging')?.value;
+  const selPlantilla = document.getElementById('sendPlantilla')?.value;
+  
+  let data = getFiltered();
+  if (aging === '1-30') data = data.filter(c => c.dias <= 30);
+  else if (aging === '31-60') data = data.filter(c => c.dias > 30 && c.dias <= 60);
+  else if (aging === '61-90') data = data.filter(c => c.dias > 60 && c.dias <= 90);
+  else if (aging === '90+') data = data.filter(c => c.dias > 90);
+
+  const el = document.getElementById('sendRecipients');
+  if (el) el.textContent = data.length;
+
+  // Preview
+  let plantilla;
+  if (selPlantilla === 'auto') {
+    const sampleDias = aging === '1-30' ? 15 : aging === '31-60' ? 45 : aging === '61-90' ? 75 : aging === '90+' ? 100 : 15;
+    plantilla = getPlantillaForAging(sampleDias);
+  } else {
+    plantilla = STATE.plantillas.find(p => p.id === parseInt(selPlantilla));
+  }
+  
+  if (plantilla) {
+    let msg = plantilla.body
+      .replace('{nombre}', 'Juan López')
+      .replace('{cuenta}', 'TP-10023')
+      .replace('{monto}', '2,500')
+      .replace('{dias}', '45');
+    document.getElementById('waPreview').innerHTML = msg + '<div class="time">' + new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) + ' ✓✓</div>';
+  }
+}
+
+function startMassSend() {
+  const aging = document.getElementById('sendAging')?.value;
+  const selPlantilla = document.getElementById('sendPlantilla')?.value;
+  const delayMin = parseInt(document.getElementById('sendDelayMin')?.value) || 30;
+  const delayMax = parseInt(document.getElementById('sendDelayMax')?.value) || 60;
+
+  let data = getFiltered();
+  if (aging === '1-30') data = data.filter(c => c.dias <= 30);
+  else if (aging === '31-60') data = data.filter(c => c.dias > 30 && c.dias <= 60);
+  else if (aging === '61-90') data = data.filter(c => c.dias > 60 && c.dias <= 90);
+  else if (aging === '90+') data = data.filter(c => c.dias > 90);
+
+  if (!data.length) return alert('No hay cuentas para enviar');
+
+  document.getElementById('sendProgress').style.display = '';
+  document.getElementById('btnStartSend').style.display = 'none';
+  document.getElementById('btnStopSend').style.display = '';
+  document.getElementById('sendTot').textContent = data.length;
+  document.getElementById('sendCnt').textContent = '0';
+  document.getElementById('sendOk').textContent = '0';
+  document.getElementById('pFill').style.width = '0';
+  document.getElementById('sendLog').innerHTML = '';
+
+  sendActive = true;
+  let idx = 0, ok = 0;
+  addSendLog(`🚀 Iniciando envío a ${data.length} cuentas (delay: ${delayMin}-${delayMax}s)`, 'wait');
+
+  function next() {
+    if (!sendActive || idx >= data.length) {
+      addSendLog(`✅ Finalizado: ${ok} mensajes generados de ${idx} cuentas`, 'ok');
+      document.getElementById('btnStartSend').style.display = '';
+      document.getElementById('btnStopSend').style.display = 'none';
+      sendActive = false;
+      return;
+    }
+
+    const c = data[idx];
+    let plantilla;
+    if (selPlantilla === 'auto') {
+      plantilla = getPlantillaForAging(c.dias);
+    } else {
+      plantilla = STATE.plantillas.find(p => p.id === parseInt(selPlantilla));
+    }
+    
+    if (!plantilla) { idx++; next(); return; }
+
+    let msg = plantilla.body
+      .replace(/\{nombre\}/g, c.nombre)
+      .replace(/\{cuenta\}/g, c.cuenta)
+      .replace(/\{monto\}/g, Number(c.monto).toLocaleString('es-MX'))
+      .replace(/\{dias\}/g, c.dias);
+
+    const phone = c.telefono.startsWith('52') ? c.telefono : '52' + c.telefono;
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+
+    // Record
+    STATE.historial.push({
+      cuenta: c.cuenta, nombre: c.nombre, telefono: c.telefono,
+      monto: c.monto, dias: c.dias, cobrador: STATE.cobradorName,
+      plantilla: plantilla.name, fecha: new Date().toISOString()
+    });
+    localStorage.setItem(LS('historial'), JSON.stringify(STATE.historial));
+
+    ok++; idx++;
+    const pct = ((idx / data.length) * 100).toFixed(0);
+    document.getElementById('sendCnt').textContent = idx;
+    document.getElementById('sendOk').textContent = ok;
+    document.getElementById('pFill').style.width = pct + '%';
+    addSendLog(`✓ ${c.nombre} — ${c.cuenta} — ${fmtMoney(c.monto)} (${c.dias}d)`, 'ok');
+
+    if (idx < data.length) {
+      const delay = Math.floor(Math.random() * (delayMax - delayMin + 1)) + delayMin;
+      addSendLog(`⏳ Siguiente en ${delay}s...`, 'wait');
+      sendTimer = setTimeout(next, delay * 1000);
+    } else {
+      next();
+    }
+  }
+  next();
+}
+
+function stopMassSend() {
+  sendActive = false;
+  if (sendTimer) clearTimeout(sendTimer);
+  addSendLog('⏹ Detenido por el usuario', 'err');
+  document.getElementById('btnStartSend').style.display = '';
+  document.getElementById('btnStopSend').style.display = 'none';
+}
+
+function addSendLog(msg, cls) {
+  const el = document.getElementById('sendLog');
+  if (!el) return;
+  el.innerHTML += `<div class="${cls}">[${new Date().toLocaleTimeString('es-MX')}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function sendSingle(cuenta) {
+  const c = STATE.cuentas.find(x => x.cuenta === cuenta);
+  if (!c) return;
+  const plantilla = getPlantillaForAging(c.dias);
+  if (!plantilla) return alert('No hay plantilla para esta antigüedad');
+  let msg = plantilla.body
+    .replace(/\{nombre\}/g, c.nombre)
+    .replace(/\{cuenta\}/g, c.cuenta)
+    .replace(/\{monto\}/g, Number(c.monto).toLocaleString('es-MX'))
+    .replace(/\{dias\}/g, c.dias);
+  
+  openModal(`Enviar a ${c.nombre}`, `
+    <div style="margin-bottom:14px;font-size:13px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div><span style="color:var(--text3)">Cuenta:</span> ${c.cuenta}</div>
+        <div><span style="color:var(--text3)">Monto:</span> <strong>${fmtMoney(c.monto)}</strong></div>
+        <div><span style="color:var(--text3)">Días:</span> <span class="tag ${agingTag(c.dias)[1]}">${c.dias}d</span></div>
+        <div><span style="color:var(--text3)">Tel:</span> ${fmtPhone(c.telefono)}</div>
+      </div>
+    </div>
+    <div class="form-group"><label>Mensaje (editable)</label><textarea id="singleMsg" rows="5">${msg}</textarea></div>
+    <div class="wa-wrap" style="margin-top:8px"><div class="wa-preview" id="singlePreview">${msg}<div class="time">${new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})} ✓✓</div></div></div>
+  `, `<button class="btn btn-primary" onclick="doSendSingle('${c.cuenta}')">📤 Abrir en WhatsApp</button>`);
+  
+  document.getElementById('singleMsg')?.addEventListener('input', e => {
+    document.getElementById('singlePreview').innerHTML = e.target.value + '<div class="time">' + new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}) + ' ✓✓</div>';
+  });
+}
+
+function doSendSingle(cuenta) {
+  const c = STATE.cuentas.find(x => x.cuenta === cuenta);
+  if (!c) return;
+  const msg = document.getElementById('singleMsg').value;
+  const phone = c.telefono.startsWith('52') ? c.telefono : '52' + c.telefono;
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+  
+  STATE.historial.push({
+    cuenta: c.cuenta, nombre: c.nombre, telefono: c.telefono,
+    monto: c.monto, dias: c.dias, cobrador: STATE.cobradorName,
+    plantilla: 'Individual', fecha: new Date().toISOString()
+  });
+  localStorage.setItem(LS('historial'), JSON.stringify(STATE.historial));
+  closeModal();
+}
+
+// ============ PLANTILLAS ============
+function renderPlantillas() {
+  document.getElementById('content').innerHTML = `
+    <div style="margin-bottom:16px"><button class="btn btn-primary" onclick="openNewPlantilla()">+ Nueva plantilla</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">
+      ${STATE.plantillas.map(p => {
+        const agingColors = {'1-30':'tag-green','31-60':'tag-yellow','61-90':'tag-orange','90+':'tag-red'};
+        return `<div class="panel" style="margin:0">
+          <div class="panel-head">
+            <div><h2>${p.name}</h2></div>
+            <span class="tag ${agingColors[p.aging]||'tag-gray'}">${p.aging || 'General'}</span>
+          </div>
+          <div style="padding:16px">
+            <div class="wa-wrap" style="margin-bottom:12px"><div class="wa-preview" style="font-size:12px">${highlightVars(p.body)}<div class="time">12:00 ✓✓</div></div></div>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="editPlantilla(${p.id})">✏ Editar</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="deletePlantilla(${p.id})">✕</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2)">
+      <strong style="color:var(--text)">Variables disponibles:</strong>
+      <code style="color:var(--accent)">{nombre}</code> nombre del cliente,
+      <code style="color:var(--accent)">{cuenta}</code> número de cuenta,
+      <code style="color:var(--accent)">{monto}</code> adeudo,
+      <code style="color:var(--accent)">{dias}</code> días de atraso
+    </div>
+  `;
+}
+
+function highlightVars(body) {
+  return body.replace(/\{(\w+)\}/g, '<span style="background:rgba(59,130,246,.15);color:var(--accent);padding:1px 5px;border-radius:3px">{$1}</span>');
+}
+
+function openNewPlantilla() {
+  openModal('Nueva plantilla', `
+    <div class="form-group"><label>Nombre</label><input type="text" id="pName" placeholder="Ej: Tercer aviso"></div>
+    <div class="form-group"><label>Antigüedad de deuda</label><select id="pAging"><option value="1-30">1-30 días</option><option value="31-60">31-60 días</option><option value="61-90">61-90 días</option><option value="90+">90+ días</option></select></div>
+    <div class="form-group"><label>Mensaje</label><textarea id="pBody" rows="5" placeholder="Hola {nombre}, tu cuenta {cuenta}..."></textarea></div>
+  `, `<button class="btn btn-primary" onclick="savePlantilla()">Guardar</button>`);
+}
+
+function savePlantilla() {
+  const name = document.getElementById('pName').value.trim();
+  const aging = document.getElementById('pAging').value;
+  const body = document.getElementById('pBody').value.trim();
+  if (!name || !body) return alert('Completa todos los campos');
+  const maxId = STATE.plantillas.reduce((m,p) => Math.max(m,p.id), 0);
+  STATE.plantillas.push({id: maxId+1, name, aging, body});
+  localStorage.setItem(LS('plantillas'), JSON.stringify(STATE.plantillas));
+  closeModal(); renderPlantillas();
+}
+
+function editPlantilla(id) {
+  const p = STATE.plantillas.find(x => x.id === id);
+  if (!p) return;
+  openModal('Editar plantilla', `
+    <div class="form-group"><label>Nombre</label><input type="text" id="pName" value="${p.name}"></div>
+    <div class="form-group"><label>Antigüedad</label><select id="pAging">${['1-30','31-60','61-90','90+'].map(a=>`<option ${a===p.aging?'selected':''}>${a}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Mensaje</label><textarea id="pBody" rows="5">${p.body}</textarea></div>
+  `, `<button class="btn btn-primary" onclick="updatePlantilla(${id})">Actualizar</button>`);
+}
+
+function updatePlantilla(id) {
+  const p = STATE.plantillas.find(x => x.id === id);
+  if (!p) return;
+  p.name = document.getElementById('pName').value.trim();
+  p.aging = document.getElementById('pAging').value;
+  p.body = document.getElementById('pBody').value.trim();
+  localStorage.setItem(LS('plantillas'), JSON.stringify(STATE.plantillas));
+  closeModal(); renderPlantillas();
+}
+
+function deletePlantilla(id) {
+  if (!confirm('¿Eliminar esta plantilla?')) return;
+  STATE.plantillas = STATE.plantillas.filter(x => x.id !== id);
+  localStorage.setItem(LS('plantillas'), JSON.stringify(STATE.plantillas));
+  renderPlantillas();
+}
+
+// ============ HISTORIAL ============
+function renderHistorial() {
+  const hist = STATE.historial.slice().reverse();
+  document.getElementById('content').innerHTML = `
+    <div class="filters">
+      <input type="text" id="hSearch" placeholder="Buscar..." oninput="filterHist()" style="min-width:200px">
+      <select id="hDate" onchange="filterHist()"><option value="">Todas las fechas</option><option value="today">Hoy</option><option value="week">Última semana</option><option value="month">Último mes</option></select>
+      <span style="margin-left:auto;font-size:12px;color:var(--text3)">${hist.length} gestiones</span>
+      <button class="btn btn-ghost btn-sm" onclick="exportHistorial()">⬇ Exportar CSV</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red)" onclick="clearHist()">🗑</button>
+    </div>
+    <div class="panel">
+      ${hist.length ? `<table>
+        <tr><th>Fecha</th><th>Cuenta</th><th>Cliente</th><th>Monto</th><th>Días</th><th>Plantilla</th><th>Cobrador</th></tr>
+        ${hist.slice(0,200).map(h => `
+          <tr class="hist-row" data-search="${(h.cuenta+' '+h.nombre+' '+h.cobrador).toLowerCase()}" data-date="${h.fecha}">
+            <td style="font-size:11px;font-family:'DM Mono';white-space:nowrap">${new Date(h.fecha).toLocaleDateString('es-MX')} ${new Date(h.fecha).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'})}</td>
+            <td style="font-family:'DM Mono';font-size:12px">${h.cuenta}</td>
+            <td>${h.nombre}</td>
+            <td style="font-weight:600">${fmtMoney(h.monto)}</td>
+            <td><span class="tag ${agingTag(h.dias)[1]}">${h.dias}d</span></td>
+            <td style="font-size:12px;color:var(--text2)">${h.plantilla}</td>
+            <td style="font-size:12px">${h.cobrador}</td>
+          </tr>
+        `).join('')}
+      </table>` : '<div style="padding:40px;text-align:center;color:var(--text3)">Sin gestiones registradas</div>'}
+    </div>
+  `;
+}
+
+function filterHist() {
+  const q = (document.getElementById('hSearch')?.value || '').toLowerCase();
+  const dateF = document.getElementById('hDate')?.value || '';
+  const now = new Date();
+  document.querySelectorAll('.hist-row').forEach(tr => {
+    const matchQ = !q || tr.dataset.search.includes(q);
+    let matchDate = true;
+    if (dateF) {
+      const d = new Date(tr.dataset.date);
+      if (dateF === 'today') matchDate = d.toDateString() === now.toDateString();
+      else if (dateF === 'week') matchDate = (now - d) < 7*24*60*60*1000;
+      else if (dateF === 'month') matchDate = (now - d) < 30*24*60*60*1000;
+    }
+    tr.style.display = matchQ && matchDate ? '' : 'none';
+  });
+}
+
+function clearHist() {
+  if (!confirm('¿Limpiar todo el historial de gestiones?')) return;
+  STATE.historial = [];
+  localStorage.setItem(LS('historial'), JSON.stringify([]));
+  renderHistorial();
+}
+
+function exportHistorial() {
+  let csv = 'Fecha,Cuenta,Cliente,Telefono,Monto,Dias,Plantilla,Cobrador\n';
+  STATE.historial.forEach(h => {
+    csv += `"${new Date(h.fecha).toLocaleString('es-MX')}","${h.cuenta}","${h.nombre}","${h.telefono}",${h.monto},${h.dias},"${h.plantilla}","${h.cobrador}"\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'historial_cobranza_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ============ CONFIG ============
+function renderConfig() {
+  document.getElementById('content').innerHTML = `
+    <div style="max-width:600px">
+      <div class="panel">
+        <div class="panel-head"><h2>Conexión (Web App)</h2></div>
+        <div style="padding:18px">
+          <div class="form-group"><label>URL de Web App (Apps Script)</label><input type="url" id="cfgUrl" value="${STATE.sheetUrl}"></div>
+          <div style="background:var(--bg);border-radius:6px;padding:14px;font-size:12px;color:var(--text2);margin-bottom:14px">
+            <strong style="color:var(--text)">Encabezados requeridos en la fila 1 de tu hoja:</strong><br>
+            <code style="color:var(--accent)">cuenta</code> &nbsp;
+            <code style="color:var(--accent)">nombre</code> &nbsp;
+            <code style="color:var(--accent)">telefono</code> &nbsp;
+            <code style="color:var(--accent)">monto</code> &nbsp;
+            <code style="color:var(--accent)">dias</code> &nbsp;
+            <code style="color:var(--accent)">cobrador</code>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="saveConfig()">Guardar</button>
+            <button class="btn btn-ghost" onclick="openSetupGuide()">📖 Ver instrucciones</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Delays de envío</h2></div>
+        <div style="padding:18px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group"><label>Mínimo (segundos)</label><input type="number" id="cfgDelayMin" value="${STATE.config.delayMin}" min="10"></div>
+            <div class="form-group"><label>Máximo (segundos)</label><input type="number" id="cfgDelayMax" value="${STATE.config.delayMax}" min="15"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px">
+            Recomendación: mínimo 30 segundos para cuentas nuevas, 20 para cuentas con 90+ días de WhatsApp Business.<br>
+            Máximo 30 mensajes por hora para evitar detección.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Datos</h2></div>
+        <div style="padding:18px;display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="exportAll()">⬇ Exportar todo (JSON)</button>
+          <button class="btn btn-danger btn-sm" onclick="resetAll()">🗑 Resetear datos locales</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function saveConfig() {
+  STATE.sheetUrl = document.getElementById('cfgUrl').value.trim();
+  STATE.config.delayMin = parseInt(document.getElementById('cfgDelayMin')?.value) || 30;
+  STATE.config.delayMax = parseInt(document.getElementById('cfgDelayMax')?.value) || 60;
+  localStorage.setItem(LS('config'), JSON.stringify(STATE.config));
+  localStorage.setItem(LS('webAppUrl'), STATE.sheetUrl);
+  alert('Configuración guardada');
+}
+
+function exportAll() {
+  const blob = new Blob([JSON.stringify({historial:STATE.historial,plantillas:STATE.plantillas,config:STATE.config},null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cobranza_wa_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function resetAll() {
+  if (!confirm('¿Eliminar todos los datos locales? (historial, plantillas, configuración)')) return;
+  ['historial','plantillas','config','webAppUrl'].forEach(k => localStorage.removeItem(LS(k)));
+  location.reload();
+}
+
+// ============ MODAL ============
+function openModal(title, body, footer) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('modalFoot').innerHTML = footer || '';
+  document.getElementById('modalBg').classList.add('show');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('show'); }
+
+// ============ RESTORE ============
+const savedUrl = localStorage.getItem(LS('webAppUrl'));
+if (savedUrl) document.getElementById('webAppUrl').value = savedUrl;
+</script>
+</body>
+</html>
