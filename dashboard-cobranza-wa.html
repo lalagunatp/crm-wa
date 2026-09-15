@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Cobranza WA</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#0a0a1a;color:#e0e0e0;min-height:100vh}
+.header{background:#0f0f23;border-bottom:1px solid #1e1e3a;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.3rem;font-weight:700;color:#fff}
+.header h1 span{color:#25d366}
+.header-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.header-controls select,.header-controls input{padding:6px 10px;background:#1a1a2e;border:1px solid #333;border-radius:6px;color:#fff;font-size:12px}
+.btn{padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-green{background:#25d366;color:#fff}
+.btn-green:hover{background:#1da851}
+.btn-outline{background:transparent;border:1px solid #333;color:#aaa}
+.btn-outline:hover{background:#1a1a2e}
+
+.container{max-width:1200px;margin:0 auto;padding:20px}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:#12122a;border:1px solid #1e1e3a;border-radius:10px;padding:16px;text-align:center}
+.kpi .value{font-size:2rem;font-weight:800}
+.kpi .label{font-size:0.75rem;color:#888;margin-top:4px}
+.kpi.green .value{color:#4caf50}
+.kpi.red .value{color:#f44336}
+.kpi.blue .value{color:#64b5f6}
+.kpi.orange .value{color:#ff9800}
+.kpi.white .value{color:#fff}
+.kpi.purple .value{color:#ce93d8}
+
+/* CARDS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:#12122a;border:1px solid #1e1e3a;border-radius:10px;padding:20px;overflow:hidden}
+.card h3{font-size:0.95rem;font-weight:700;color:#fff;margin-bottom:12px}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;max-height:400px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th{background:#1a1a3a;color:#25d366;font-weight:600;padding:8px 10px;text-align:left;position:sticky;top:0;z-index:1}
+td{padding:8px 10px;border-top:1px solid #1e1e3a;color:#ccc}
+tr:hover td{background:#15152e}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:0.7rem;font-weight:600}
+.tag-ok{background:#1a3a1a;color:#4caf50}
+.tag-fail{background:#3a1a1a;color:#ff5252}
+
+/* BARS */
+.bar-chart{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-name{width:140px;font-size:0.8rem;color:#aaa;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{flex:1;height:22px;background:#0a0a1a;border-radius:4px;position:relative;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:0.7rem;font-weight:600;color:#fff;min-width:30px;transition:width .5s ease}
+.bar-fill.green{background:#25d366}
+.bar-fill.red{background:#f44336}
+.bar-fill.stacked{display:flex;padding:0}
+.bar-fill.stacked .seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;color:#fff}
+.bar-num{width:40px;font-size:0.8rem;color:#aaa;text-align:right}
+
+/* HORA CHART */
+.hora-chart{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:10px}
+.hora-bar{flex:1;background:#25d366;border-radius:3px 3px 0 0;min-width:12px;position:relative;transition:height .5s ease}
+.hora-bar:hover{opacity:.8}
+.hora-label{text-align:center;font-size:0.65rem;color:#666;margin-top:4px}
+.hora-labels{display:flex;gap:4px}
+
+/* LOADING */
+.loading{text-align:center;padding:60px;color:#666}
+.loading .spinner{display:inline-block;width:32px;height:32px;border:3px solid #333;border-top-color:#25d366;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* FILTRO ACTIVO */
+.filter-active{background:#1a2a1a;border:1px solid #25d366;border-radius:6px;padding:6px 12px;font-size:0.8rem;color:#25d366;display:none;margin-bottom:12px}
+.filter-active.show{display:flex;align-items:center;gap:8px}
+
+@media(max-width:768px){
+  .grid-2{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(3,1fr)}
+  .bar-name{width:80px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Dashboard <span>Cobranza WA</span></h1>
+  <div class="header-controls">
+    <select id="filtroFecha">
+      <option value="hoy">Hoy</option>
+      <option value="ayer">Ayer</option>
+      <option value="semana">Esta semana</option>
+      <option value="mes">Este mes</option>
+      <option value="todo">Todo el historial</option>
+      <option value="rango">Rango personalizado</option>
+    </select>
+    <input type="date" id="fechaDesde" style="display:none">
+    <input type="date" id="fechaHasta" style="display:none">
+    <select id="filtroCobrador">
+      <option value="">Todos los asesores</option>
+    </select>
+    <button class="btn btn-green" id="btnCargar">Actualizar</button>
+  </div>
+</div>
+
+<div class="container">
+  <div id="loadingBox" class="loading">
+    <div class="spinner"></div>
+    <div>Cargando datos de GESTIONES...</div>
+  </div>
+
+  <div id="dashboard" style="display:none">
+
+    <div class="filter-active" id="filterBadge">
+      <span id="filterText"></span>
+      <button class="btn btn-outline" onclick="document.getElementById('filtroFecha').value='todo';cargar()" style="padding:2px 8px;font-size:11px">✕ Quitar filtro</button>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi white"><div class="value" id="kTotal">0</div><div class="label">Total intentos</div></div>
+      <div class="kpi green"><div class="value" id="kOk">0</div><div class="label">Enviados ✓</div></div>
+      <div class="kpi red"><div class="value" id="kFail">0</div><div class="label">No enviados ✗</div></div>
+      <div class="kpi blue"><div class="value" id="kPct">0%</div><div class="label">Tasa de envío</div></div>
+      <div class="kpi orange"><div class="value" id="kCuentas">0</div><div class="label">Cuentas únicas</div></div>
+      <div class="kpi purple"><div class="value" id="kAsesores">0</div><div class="label">Asesores activos</div></div>
+    </div>
+    <div style="background:#12122a;border:1px solid #1e1e3a;border-radius:8px;padding:10px 16px;margin-bottom:20px;font-size:0.78rem;color:#888;display:flex;gap:20px;flex-wrap:wrap">
+      <span><span class="tag tag-ok">✓ Enviado</span> = el mensaje salió de WhatsApp (se hizo clic en enviar)</span>
+      <span><span class="tag tag-fail">✗ No enviado</span> = el mensaje no se pudo enviar (número no en WhatsApp, timeout, error)</span>
+      <span style="color:#666">Nota: usa el botón "Verificar envíos" en la extensión para detectar palomitas y respuestas</span>
+    </div>
+
+    <!-- KPIs VERIFICACIÓN -->
+    <div class="kpi-row" id="verifyKpis" style="display:none">
+      <div class="kpi" style="border-color:#25d366"><div class="value" id="kVerificados" style="color:#25d366">0</div><div class="label">Verificados</div></div>
+      <div class="kpi" style="border-color:#aaa"><div class="value" id="kEntregados" style="color:#aaa">0</div><div class="label">✓✓ Entregados</div></div>
+      <div class="kpi" style="border-color:#64b5f6"><div class="value" id="kLeidos" style="color:#64b5f6">0</div><div class="label">✓✓ Leídos (azul)</div></div>
+      <div class="kpi" style="border-color:#4caf50"><div class="value" id="kRespondidos" style="color:#4caf50">0</div><div class="label">💬 Respondieron</div></div>
+      <div class="kpi" style="border-color:#ff9800"><div class="value" id="kTasaLectura" style="color:#ff9800">0%</div><div class="label">Tasa de lectura</div></div>
+      <div class="kpi" style="border-color:#ce93d8"><div class="value" id="kTasaResp" style="color:#ce93d8">0%</div><div class="label">Tasa de respuesta</div></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- POR ASESOR -->
+      <div class="card">
+        <h3>Envíos por asesor</h3>
+        <div class="bar-chart" id="chartAsesor"></div>
+      </div>
+
+      <!-- POR HORA -->
+      <div class="card">
+        <h3>Envíos por hora del día</h3>
+        <div class="hora-chart" id="chartHora"></div>
+        <div class="hora-labels" id="chartHoraLabels"></div>
+      </div>
+
+      <!-- POR PLANTILLA -->
+      <div class="card">
+        <h3>Top plantillas usadas</h3>
+        <div class="bar-chart" id="chartPlantilla"></div>
+      </div>
+
+      <!-- POR DÍA -->
+      <div class="card">
+        <h3>Envíos por día</h3>
+        <div class="bar-chart" id="chartDia"></div>
+      </div>
+    </div>
+
+    <!-- CUMPLIMIENTO DE VERIFICACIÓN POR ASESOR -->
+    <div class="card" id="verifyComplianceCard" style="display:none;margin-bottom:20px">
+      <h3>📋 Cumplimiento de verificación por asesor</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Asesor</th>
+              <th>Enviados</th>
+              <th>Verificados</th>
+              <th>% Verificado</th>
+              <th>✓✓ Entregados</th>
+              <th>🔵 Leídos</th>
+              <th>💬 Respondieron</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="verifyComplianceBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLA DETALLE -->
+    <div class="card">
+      <h3>Detalle de gestiones <span id="tblCount" style="font-weight:400;color:#666;font-size:0.8rem"></span></h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha/Hora</th>
+              <th>Asesor</th>
+              <th>Cuenta</th>
+              <th>Cliente</th>
+              <th>Monto</th>
+              <th>Días</th>
+              <th>Plantilla</th>
+              <th>Estado</th>
+              <th>Verificación</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzf0cdtxJTQgsdgMr1aBjacj3aw0kDozy_akBOWF6d4RQz1EkzX4YnD4KwBryk-ve5G/exec';
+
+let allData = [];
+
+// INIT
+document.getElementById('btnCargar').addEventListener('click', cargar);
+document.getElementById('filtroFecha').addEventListener('change', (e) => {
+  const show = e.target.value === 'rango';
+  document.getElementById('fechaDesde').style.display = show ? '' : 'none';
+  document.getElementById('fechaHasta').style.display = show ? '' : 'none';
+  if (!show) aplicarFiltros();
+});
+document.getElementById('filtroCobrador').addEventListener('change', aplicarFiltros);
+
+cargar();
+
+async function cargar() {
+  document.getElementById('loadingBox').style.display = '';
+  document.getElementById('dashboard').style.display = 'none';
+
+  try {
+    const sep = WEB_APP_URL.includes('?') ? '&' : '?';
+    const r = await fetch(WEB_APP_URL + sep + 'hoja=GESTIONES', { redirect: 'follow' });
+    const json = await r.json();
+
+    if (!json.ok || !json.data) {
+      document.getElementById('loadingBox').innerHTML = '<div style="color:#f44336">Error: ' + (json.error || 'No se pudo cargar GESTIONES') + '</div>';
+      return;
+    }
+
+    allData = json.data.map(row => ({
+      fecha: row.fecha || '',
+      cuenta: String(row.cuenta || ''),
+      nombre: String(row.nombre || ''),
+      telefono: String(row.telefono || ''),
+      monto: Number(row.monto) || 0,
+      dias: Number(row.dias) || 0,
+      reloj: String(row.reloj || ''),
+      cobrador: String(row.cobrador || ''),
+      plantilla: String(row.plantilla || ''),
+      estado: String(row.estado || ''),
+      verificado: String(row.verificado || ''),
+      entregado: String(row.entregado || ''),
+      leido: String(row.leido || ''),
+      respondio: String(row.respondio || ''),
+      respuesta_texto: String(row.respuesta_texto || ''),
+    }));
+
+    // Parsear fechas
+    allData.forEach(r => {
+      if (r.fecha) {
+        const d = new Date(r.fecha);
+        if (!isNaN(d)) {
+          r._date = d;
+          r._dateStr = d.toISOString().slice(0,10);
+          r._hour = d.getHours();
+          r._timeStr = d.toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+        }
+      }
+    });
+
+    // Poblar filtro de cobradores
+    const cobradores = [...new Set(allData.map(r => r.cobrador).filter(Boolean))].sort();
+    const sel = document.getElementById('filtroCobrador');
+    sel.innerHTML = '<option value="">Todos los asesores</option>';
+    cobradores.forEach(c => { sel.innerHTML += '<option value="' + c + '">' + c + '</option>'; });
+
+    aplicarFiltros();
+
+  } catch (err) {
+    document.getElementById('loadingBox').innerHTML = '<div style="color:#f44336">Error de conexión: ' + err.message + '</div>';
+  }
+}
+
+function aplicarFiltros() {
+  const filtroFecha = document.getElementById('filtroFecha').value;
+  const filtroCobrador = document.getElementById('filtroCobrador').value;
+
+  const hoy = new Date();
+  const hoyStr = hoy.toISOString().slice(0,10);
+  const ayer = new Date(hoy); ayer.setDate(ayer.getDate()-1);
+  const ayerStr = ayer.toISOString().slice(0,10);
+
+  // Inicio de semana (lunes)
+  const dow = hoy.getDay();
+  const lunes = new Date(hoy); lunes.setDate(hoy.getDate() - (dow === 0 ? 6 : dow - 1));
+  const lunesStr = lunes.toISOString().slice(0,10);
+
+  const mesStr = hoy.toISOString().slice(0,7);
+
+  let data = allData.filter(r => r._date);
+
+  // Filtro fecha
+  let filterLabel = '';
+  if (filtroFecha === 'hoy') {
+    data = data.filter(r => r._dateStr === hoyStr);
+    filterLabel = 'Hoy (' + hoyStr + ')';
+  } else if (filtroFecha === 'ayer') {
+    data = data.filter(r => r._dateStr === ayerStr);
+    filterLabel = 'Ayer (' + ayerStr + ')';
+  } else if (filtroFecha === 'semana') {
+    data = data.filter(r => r._dateStr >= lunesStr);
+    filterLabel = 'Esta semana (desde ' + lunesStr + ')';
+  } else if (filtroFecha === 'mes') {
+    data = data.filter(r => r._dateStr && r._dateStr.slice(0,7) === mesStr);
+    filterLabel = 'Este mes (' + mesStr + ')';
+  } else if (filtroFecha === 'rango') {
+    const desde = document.getElementById('fechaDesde').value;
+    const hasta = document.getElementById('fechaHasta').value;
+    if (desde) data = data.filter(r => r._dateStr >= desde);
+    if (hasta) data = data.filter(r => r._dateStr <= hasta);
+    filterLabel = 'Rango: ' + (desde || '...') + ' a ' + (hasta || '...');
+  }
+
+  // Filtro cobrador
+  if (filtroCobrador) {
+    data = data.filter(r => r.cobrador === filtroCobrador);
+    filterLabel += (filterLabel ? ' · ' : '') + 'Asesor: ' + filtroCobrador;
+  }
+
+  // Badge
+  const badge = document.getElementById('filterBadge');
+  if (filtroFecha !== 'todo' || filtroCobrador) {
+    badge.classList.add('show');
+    document.getElementById('filterText').textContent = '🔍 ' + filterLabel;
+  } else {
+    badge.classList.remove('show');
+  }
+
+  renderDashboard(data);
+}
+
+function renderDashboard(data) {
+  document.getElementById('loadingBox').style.display = 'none';
+  document.getElementById('dashboard').style.display = '';
+
+  const ok = data.filter(r => r.estado.includes('Enviado'));
+  const fail = data.filter(r => !r.estado.includes('Enviado'));
+  const cuentasUnicas = new Set(data.map(r => r.cuenta)).size;
+  const asesoresActivos = new Set(data.map(r => r.cobrador).filter(Boolean)).size;
+
+  // KPIs
+  document.getElementById('kTotal').textContent = data.length.toLocaleString();
+  document.getElementById('kOk').textContent = ok.length.toLocaleString();
+  document.getElementById('kFail').textContent = fail.length.toLocaleString();
+  document.getElementById('kPct').textContent = data.length ? Math.round(ok.length / data.length * 100) + '%' : '—';
+  document.getElementById('kCuentas').textContent = cuentasUnicas.toLocaleString();
+  document.getElementById('kAsesores').textContent = asesoresActivos;
+
+  // KPIs de verificación
+  const verificados = data.filter(r => String(r.verificado || '') === 'SI');
+  if (verificados.length > 0) {
+    document.getElementById('verifyKpis').style.display = '';
+    const entregados = verificados.filter(r => String(r.entregado || '') === 'SI').length;
+    const leidos = verificados.filter(r => String(r.leido || '') === 'SI').length;
+    const respondidos = verificados.filter(r => String(r.respondio || '') === 'SI').length;
+    document.getElementById('kVerificados').textContent = verificados.length;
+    document.getElementById('kEntregados').textContent = entregados;
+    document.getElementById('kLeidos').textContent = leidos;
+    document.getElementById('kRespondidos').textContent = respondidos;
+    document.getElementById('kTasaLectura').textContent = verificados.length ? Math.round(leidos / verificados.length * 100) + '%' : '—';
+    document.getElementById('kTasaResp').textContent = verificados.length ? Math.round(respondidos / verificados.length * 100) + '%' : '—';
+  } else {
+    document.getElementById('verifyKpis').style.display = 'none';
+  }
+
+  // POR ASESOR
+  renderBarChart('chartAsesor', groupBy(data, 'cobrador'), ok, 'cobrador');
+
+  // CUMPLIMIENTO DE VERIFICACIÓN POR ASESOR
+  renderVerifyCompliance(data);
+
+  // POR HORA
+  renderHoraChart(data);
+
+  // POR PLANTILLA
+  renderBarChart('chartPlantilla', groupByPlantilla(data), ok, '_plantillaCorta', 10);
+
+  // POR DÍA
+  renderDiaChart(data, ok);
+
+  // TABLA
+  renderTabla(data);
+}
+
+function groupBy(data, field) {
+  const map = {};
+  data.forEach(r => {
+    const key = r[field] || '(vacío)';
+    if (!map[key]) map[key] = { total: 0, ok: 0 };
+    map[key].total++;
+    if (r.estado.includes('Enviado')) map[key].ok++;
+  });
+  return Object.entries(map).sort((a,b) => b[1].total - a[1].total);
+}
+
+function groupByPlantilla(data) {
+  const map = {};
+  data.forEach(r => {
+    // Acortar nombre de plantilla
+    let p = r.plantilla || '(sin plantilla)';
+    if (p.includes(' — ')) p = p.split(' — ').pop();
+    if (p.length > 30) p = p.slice(0,30) + '…';
+    r._plantillaCorta = p;
+    if (!map[p]) map[p] = { total: 0, ok: 0 };
+    map[p].total++;
+    if (r.estado.includes('Enviado')) map[p].ok++;
+  });
+  return Object.entries(map).sort((a,b) => b[1].total - a[1].total);
+}
+
+function renderBarChart(containerId, entries, okData, field, limit) {
+  const el = document.getElementById(containerId);
+  if (!entries.length) { el.innerHTML = '<div style="color:#666;font-size:0.8rem;padding:20px;text-align:center">Sin datos</div>'; return; }
+
+  const maxVal = entries[0][1].total;
+  const show = limit ? entries.slice(0, limit) : entries;
+
+  el.innerHTML = show.map(([name, stats]) => {
+    const pctOk = maxVal ? (stats.ok / maxVal * 100) : 0;
+    const pctFail = maxVal ? ((stats.total - stats.ok) / maxVal * 100) : 0;
+    return `<div class="bar-row">
+      <div class="bar-name" title="${name}">${name}</div>
+      <div class="bar-track">
+        <div style="display:flex;height:100%">
+          <div class="bar-fill green" style="width:${pctOk}%">${stats.ok}</div>
+          ${stats.total - stats.ok > 0 ? `<div class="bar-fill red" style="width:${pctFail}%">${stats.total - stats.ok}</div>` : ''}
+        </div>
+      </div>
+      <div class="bar-num">${stats.total}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHoraChart(data) {
+  const hours = {};
+  for (let h = 7; h <= 22; h++) hours[h] = 0;
+  data.forEach(r => { if (r._hour !== undefined && r._hour >= 7 && r._hour <= 22) hours[r._hour]++; });
+
+  const maxH = Math.max(...Object.values(hours), 1);
+  const el = document.getElementById('chartHora');
+  const labels = document.getElementById('chartHoraLabels');
+
+  el.innerHTML = Object.entries(hours).map(([h, count]) => {
+    const pct = count / maxH * 100;
+    const color = Number(h) < 14 ? '#25d366' : '#64b5f6';
+    return `<div class="hora-bar" style="height:${Math.max(pct,2)}%;background:${color}" title="${h}:00 → ${count} envíos"></div>`;
+  }).join('');
+
+  labels.innerHTML = Object.keys(hours).map(h => `<div class="hora-label" style="flex:1">${h}</div>`).join('');
+}
+
+function renderDiaChart(data, ok) {
+  const map = {};
+  data.forEach(r => {
+    if (!r._dateStr) return;
+    if (!map[r._dateStr]) map[r._dateStr] = { total: 0, ok: 0 };
+    map[r._dateStr].total++;
+    if (r.estado.includes('Enviado')) map[r._dateStr].ok++;
+  });
+  const entries = Object.entries(map).sort((a,b) => a[0].localeCompare(b[0])).slice(-14); // últimos 14 días
+  const maxVal = Math.max(...entries.map(e => e[1].total), 1);
+
+  const el = document.getElementById('chartDia');
+  el.innerHTML = entries.map(([date, stats]) => {
+    const label = date.slice(5); // MM-DD
+    const pctOk = stats.ok / maxVal * 100;
+    const pctFail = (stats.total - stats.ok) / maxVal * 100;
+    return `<div class="bar-row">
+      <div class="bar-name">${label}</div>
+      <div class="bar-track">
+        <div style="display:flex;height:100%">
+          <div class="bar-fill green" style="width:${pctOk}%">${stats.ok}</div>
+          ${stats.total - stats.ok > 0 ? `<div class="bar-fill red" style="width:${pctFail}%">${stats.total - stats.ok}</div>` : ''}
+        </div>
+      </div>
+      <div class="bar-num">${stats.total}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTabla(data) {
+  const tbody = document.getElementById('tblBody');
+  document.getElementById('tblCount').textContent = '(' + data.length + ' registros)';
+
+  // Mostrar los últimos 500 (más recientes primero)
+  const sorted = [...data].sort((a,b) => (b._date || 0) - (a._date || 0)).slice(0, 500);
+
+  tbody.innerHTML = sorted.map(r => {
+    const esOk = r.estado.includes('Enviado');
+    const estadoLabel = esOk ? '✓ Enviado' : '✗ No enviado';
+    const estadoTip = esOk ? 'Mensaje entregado a WhatsApp' : r.estado.replace('Fallido — ', '').replace('Fallido', 'Error de envío');
+    return `<tr>
+      <td>${r._timeStr || r.fecha}</td>
+      <td>${r.cobrador}</td>
+      <td>${r.cuenta}</td>
+      <td>${r.nombre}</td>
+      <td>$${r.monto.toLocaleString('es-MX')}</td>
+      <td>${r.dias}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.plantilla}">${r.plantilla}</td>
+      <td><span class="tag ${esOk ? 'tag-ok' : 'tag-fail'}" title="${estadoTip}">${estadoLabel}</span></td>
+      <td>${r.verificado === 'SI' ? (r.leido === 'SI' ? '<span style="color:#64b5f6">✓✓ Leído</span>' : r.entregado === 'SI' ? '<span style="color:#aaa">✓✓ Entregado</span>' : '<span style="color:#666">✓ Enviado</span>') + (r.respondio === 'SI' ? ' <span style="color:#4caf50">💬</span>' : '') : '<span style="color:#444">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderVerifyCompliance(data) {
+  const card = document.getElementById('verifyComplianceCard');
+  const tbody = document.getElementById('verifyComplianceBody');
+
+  // Solo mostrar si hay envíos exitosos
+  const enviados = data.filter(r => r.estado.includes('Enviado'));
+  if (!enviados.length) { card.style.display = 'none'; return; }
+
+  card.style.display = '';
+
+  // Agrupar por asesor
+  const porAsesor = {};
+  enviados.forEach(r => {
+    const a = r.cobrador || '(sin asesor)';
+    if (!porAsesor[a]) porAsesor[a] = { enviados: 0, verificados: 0, entregados: 0, leidos: 0, respondidos: 0 };
+    porAsesor[a].enviados++;
+    if (r.verificado === 'SI') {
+      porAsesor[a].verificados++;
+      if (r.entregado === 'SI') porAsesor[a].entregados++;
+      if (r.leido === 'SI') porAsesor[a].leidos++;
+      if (r.respondio === 'SI') porAsesor[a].respondidos++;
+    }
+  });
+
+  const sorted = Object.entries(porAsesor).sort((a,b) => b[1].enviados - a[1].enviados);
+
+  tbody.innerHTML = sorted.map(([nombre, s]) => {
+    const pct = s.enviados ? Math.round(s.verificados / s.enviados * 100) : 0;
+    let estado = '';
+    if (s.verificados === 0) estado = '<span style="color:#f44336;font-weight:600">⚠ Sin verificar</span>';
+    else if (pct < 100) estado = '<span style="color:#ff9800;font-weight:600">⏳ Parcial</span>';
+    else estado = '<span style="color:#4caf50;font-weight:600">✅ Completo</span>';
+
+    return '<tr>' +
+      '<td>' + nombre + '</td>' +
+      '<td>' + s.enviados + '</td>' +
+      '<td>' + s.verificados + '</td>' +
+      '<td><strong style="color:' + (pct === 100 ? '#4caf50' : pct > 0 ? '#ff9800' : '#f44336') + '">' + pct + '%</strong></td>' +
+      '<td>' + s.entregados + '</td>' +
+      '<td>' + s.leidos + '</td>' +
+      '<td>' + s.respondidos + '</td>' +
+      '<td>' + estado + '</td>' +
+    '</tr>';
+  }).join('');
+}
+</script>
+
+</body>
+</html>
